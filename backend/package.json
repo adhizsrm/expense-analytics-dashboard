@@ -1,0 +1,16 @@
+{
+  "name": "expense-analytics-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Scalable expense analytics API with validation and filtering",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "express-validator": "^7.0.1"
+  }
+}

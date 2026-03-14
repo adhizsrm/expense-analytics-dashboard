@@ -1,35 +1,39 @@
-# Expense Analytics Dashboard
+# 💰 Expense Analytics Dashboard
 
-A full-stack expense analysis application that parses raw expense text, calculates analytics, and visualizes spending using interactive charts and tables.
+A full-stack dashboard that parses raw expense text and generates insights such as category breakdowns, statistics, and visualizations.
 
-Built with **React, TailwindCSS, Node.js, Express, and Recharts**.
-
----
-
-# Features
-
-• Upload or paste raw expense data
-• Automatic parsing of expense entries
-• Category-wise expense analysis
-• Interactive pie chart visualization
-• Sortable and paginated expense table
-• Powerful filtering system
-• Analytics summary (totals, averages, categories)
-• Drag-and-drop file upload
+Built with **React, Node.js, Express, TailwindCSS, and Recharts**.
 
 ---
 
-# Tech Stack
+## 🚀 Features
 
-## Frontend
+* 📂 Upload expense data via **text input or file**
+* 🧠 **Smart parsing** of raw expense entries
+* 📊 **Category distribution charts**
+* 📈 Expense **analytics and statistics**
+* 🔍 **Advanced filtering**
+
+  * Category
+  * Date range
+  * Amount range
+* 📋 **Sortable and paginated expense table**
+* 🏷 Automatic **category detection**
+* ⚡ Fast **React + Vite frontend**
+
+---
+
+## 🧱 Tech Stack
+
+### Frontend
 
 * React
 * Vite
-* TailwindCSS
+* Tailwind CSS
 * Recharts
 * Axios
 
-## Backend
+### Backend
 
 * Node.js
 * Express
@@ -38,114 +42,57 @@ Built with **React, TailwindCSS, Node.js, Express, and Recharts**.
 
 ---
 
-# Project Structure
+## 📂 Project Structure
 
 ```
-expense-analytics-dashboard
-│
-├── backend
-│   ├── middleware
+expense-analytics-dashboard/
+├── backend/
+│   ├── middleware/
 │   │   └── validation.js
-│   ├── routes
+│   ├── routes/
 │   │   └── expenses.js
-│   ├── utils
+│   ├── utils/
 │   │   └── parser.js
+│   ├── package-lock.json
+│   ├── package.json
 │   └── server.js
-│
-└── frontend
-    ├── src
-    │   ├── components
-    │   │   ├── CategoryPieChart.jsx
-    │   │   ├── ExpenseTable.jsx
-    │   │   ├── FileUpload.jsx
-    │   │   ├── FilterPanel.jsx
-    │   │   └── StatsCards.jsx
-    │   ├── services
-    │   │   └── api.js
-    │   ├── App.jsx
-    │   └── main.jsx
+├── frontend/
+│     ├── src/
+│     │   ├── components/
+│     │   │   ├── CategoryPieChart.jsx
+│     │   │   ├── ExpenseTable.jsx
+│     │   │   ├── FileUpload.jsx
+│     │   │   ├── FilterPanel.jsx
+│     │   │   └── StatsCards.jsx
+│     │   ├── services/
+│     │   │   └── api.js
+│     │   ├── App.jsx
+│     │   ├── index.css
+│     │   └── main.jsx
+│     ├── index.html
+│     ├── package-lock.json
+│     ├── package.json
+│     ├── postcss.config.js
+│     ├── tailwind.config.js
+│     └── vite.config.js
+├── .gitignore
+└── README.md
 ```
 
 ---
 
-# Example Expense Input
+## ⚙️ Installation
+
+### 1️⃣ Clone the repository
 
 ```
-02-Aug-2025
-Petrol – 1985.64 (Transport)
-Dinner – 523 (Restaurant)
-Snacks – 174 (Snacks)
-```
-
----
-
-# API Endpoints
-
-## Health Check
-
-```
-GET /api/health
-```
-
-## Parse Expenses
-
-```
-POST /api/expenses/parse
-```
-
-## Get Expenses (with filters)
-
-```
-GET /api/expenses
-```
-
-Query parameters:
-
-```
-category
-startDate
-endDate
-minAmount
-maxAmount
-```
-
-Example:
-
-```
-/api/expenses?category=Transport&minAmount=500
-```
-
-## Get Categories
-
-```
-GET /api/expenses/categories
-```
-
-## Clear Expenses
-
-```
-DELETE /api/expenses
-```
-
----
-
-# Installation
-
-Clone the repository:
-
-```
-git clone https://github.com/yourusername/expense-analytics-dashboard.git
-```
-
-Navigate to the project:
-
-```
+git clone https://github.com/adhizsrm/expense-analytics-dashboard.git
 cd expense-analytics-dashboard
 ```
 
 ---
 
-# Backend Setup
+### 2️⃣ Start the Backend
 
 ```
 cd backend
@@ -153,7 +100,7 @@ npm install
 npm run dev
 ```
 
-Server runs on:
+Backend runs on:
 
 ```
 http://localhost:3001
@@ -161,9 +108,9 @@ http://localhost:3001
 
 ---
 
-# Frontend Setup
+### 3️⃣ Start the Frontend
 
-Open a new terminal:
+Open another terminal:
 
 ```
 cd frontend
@@ -179,19 +126,68 @@ http://localhost:5173
 
 ---
 
-# Future Improvements
+## 📝 Example Expense Format
 
-* CSV export for filtered expenses
-* Monthly expense trends chart
+```
+02-Aug-2025
+Petrol – 1985.64 (Transport)
+Dinner – 523 (Restaurant)
+Snacks – 174 (Snacks)
+```
+
+---
+
+## 📊 API Endpoints
+
+### Parse Expenses
+
+```
+POST /api/expenses/parse
+```
+
+### Get Expenses
+
+```
+GET /api/expenses
+```
+
+### Get Categories
+
+```
+GET /api/expenses/categories
+```
+
+### Clear Expenses
+
+```
+DELETE /api/expenses
+```
+
+---
+
+## 📈 Analytics Provided
+
+* Total expenses
+* Total amount spent
+* Average expense
+* Category breakdown
+* Highest expense
+* Lowest expense
+
+---
+
+## 🛠 Future Improvements
+
 * Database persistence
-* Authentication system
-* Dark mode UI
+* User authentication
+* Export analytics to CSV/PDF
+* Monthly spending trends
 
 ---
 
-# Author
+## 👨‍💻 Author
 
-Adhishesh M
+**Adhishesh M**
 
----
-
+GitHub:
+https://github.com/adhizsrm

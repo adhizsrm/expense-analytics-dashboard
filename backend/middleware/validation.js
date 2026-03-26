@@ -23,12 +23,8 @@ export const validateExpenseInput = [
 
 export const validateFilterQuery = [
   query("category").optional().isString().trim().notEmpty(),
-  query("startDate")
-    .optional()
-    .matches(/^\d{2}-\d{2}-\d{4}$/),
-  query("endDate")
-    .optional()
-    .matches(/^\d{2}-\d{2}-\d{4}$/),
+  query("startDate").optional().isISO8601(),
+   query("endDate").optional().isISO8601(),
   query("minAmount").optional().isFloat({ min: 0 }),
   query("maxAmount").optional().isFloat({ min: 0 }),
 

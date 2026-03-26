@@ -29,12 +29,19 @@ function normDate(s) {
     December: "12",
   };
   const key = Object.keys(monthMap).find(
-    (k) => k.toLowerCase() === mon.toLowerCase().replace(/\.$/, "")
+    (k) => k.toLowerCase() === mon.toLowerCase().replace(/\.$/, ""),
   );
   return `${d}-${key ? monthMap[key] : "01"}-${y}`;
 }
 
 function parseDate(dateStr) {
+  // handle both formats
+  if (dateStr.includes("-") && dateStr.split("-")[0].length === 4) {
+    // YYYY-MM-DD
+    return new Date(dateStr);
+  }
+
+  // DD-MM-YYYY
   const [d, m, y] = dateStr.split("-");
   return new Date(y, m - 1, d);
 }
@@ -53,7 +60,7 @@ export function parseExpenses(text) {
       continue;
     }
     const mItem = line.match(
-      /^(.*?)\s*[–-]\s*([0-9,]+(?:\.[0-9]+)?)\s*(?:\(([^)]+)\))?$/
+      /^(.*?)\s*[–-]\s*([0-9,]+(?:\.[0-9]+)?)\s*(?:\(([^)]+)\))?$/,
     );
     if (mItem && currentDate) {
       const description = mItem[1].trim();
@@ -86,23 +93,23 @@ export function filterExpenses(expenses, filters = {}) {
   let filtered = [...expenses];
   if (filters.category)
     filtered = filtered.filter(
-      (e) => e.category.toLowerCase() === filters.category.toLowerCase()
+      (e) => e.category.toLowerCase() === filters.category.toLowerCase(),
     );
   if (filters.startDate)
     filtered = filtered.filter(
-      (e) => parseDate(e.date) >= parseDate(filters.startDate)
+      (e) => parseDate(e.date) >= parseDate(filters.startDate),
     );
   if (filters.endDate)
     filtered = filtered.filter(
-      (e) => parseDate(e.date) <= parseDate(filters.endDate)
+      (e) => parseDate(e.date) <= parseDate(filters.endDate),
     );
   if (filters.minAmount !== undefined)
     filtered = filtered.filter(
-      (e) => e.amount >= parseFloat(filters.minAmount)
+      (e) => e.amount >= parseFloat(filters.minAmount),
     );
   if (filters.maxAmount !== undefined)
     filtered = filtered.filter(
-      (e) => e.amount <= parseFloat(filters.maxAmount)
+      (e) => e.amount <= parseFloat(filters.maxAmount),
     );
   return filtered;
 }
@@ -125,10 +132,10 @@ export function getAnalytics(expenses) {
     averageAmount: parseFloat((totalAmount / expenses.length).toFixed(2)),
     categoriesCount: categories.size,
     highestExpense: expenses.reduce((max, e) =>
-      e.amount > max.amount ? e : max
+      e.amount > max.amount ? e : max,
     ),
     lowestExpense: expenses.reduce((min, e) =>
-      e.amount < min.amount ? e : min
+      e.amount < min.amount ? e : min,
     ),
   };
 }

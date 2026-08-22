@@ -1,6 +1,7 @@
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import expenseRoutes from "./routes/expenses.js";
+import authRoutes from "./routes/auth.js";
 import { initDB } from "./db/index.js";
 
 const app = express();
@@ -26,6 +27,7 @@ app.get("/api/health", (req: Request, res: Response) => {
 });
 
 app.use("/api/expenses", expenseRoutes);
+app.use("/api/auth", authRoutes);
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error("Server error:", err);

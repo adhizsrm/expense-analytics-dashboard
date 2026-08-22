@@ -31,15 +31,22 @@ const API_BASE_URL = 'http://localhost:3001/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'text/plain',
-  },
+});
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token && config.headers) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
 
 export const expenseAPI = {
   // Parse expense text
   parseExpenses: async (text: string): Promise<APIResponse<ParseExpensesData>> => {
-    const response = await api.post<APIResponse<ParseExpensesData>>('/expenses/parse', text);
+    const response = await api.post<APIResponse<ParseExpensesData>>('/expenses/parse', text, {
+      headers: { 'Content-Type': 'text/plain' }
+    });
     return response.data;
   },
 
@@ -74,6 +81,17 @@ export const expenseAPI = {
     const response = await api.get<{ status: string; message: string; timestamp: string }>('/health');
     return response.data;
   },
+};
+
+export const authAPI = {
+  login: async (credentials: any): Promise<APIResponse<any>> => {
+    const response = await api.post<APIResponse<any>>('/auth/login', credentials);
+    return response.data;
+  },
+  register: async (credentials: any): Promise<APIResponse<any>> => {
+    const response = await api.post<APIResponse<any>>('/auth/register', credentials);
+    return response.data;
+  }
 };
 
 export default api;

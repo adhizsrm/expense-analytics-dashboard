@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import AuthPage from './components/AuthPage';
 import FileUpload from './components/FileUpload';
 import StatsCards from './components/StatsCards';
 import FilterPanel from './components/FilterPanel';
@@ -13,6 +14,30 @@ export default function App() {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [categories, setCategories] = useState<string[]>([]);
+
+  const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
+  const [user, setUser] = useState<any>(JSON.parse(localStorage.getItem('user') || 'null'));
+
+  useEffect(() => {
+    if (token) {
+      handleClearFilters(); // Boot dashboard automatically
+    }
+  }, [token]);
+
+  const handleLogin = (newToken: string, newUser: any) => {
+    localStorage.setItem('token', newToken);
+    localStorage.setItem('user', JSON.stringify(newUser));
+    setToken(newToken);
+    setUser(newUser);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setToken(null);
+    setUser(null);
+    setData(null);
+  };
 
   const handleUpload = async (text: string) => {
     setLoading(true);
@@ -74,12 +99,27 @@ export default function App() {
     }
   };
 
+  if (!token) {
+    return <AuthPage onLogin={handleLogin} />;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <header className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">
+        <header className="text-center mb-8 relative">
+          <div className="absolute right-0 top-0 mt-2">
+            <span className="text-sm text-gray-500 mr-4 border border-gray-200 bg-white px-2 py-1 rounded">
+              {user?.email}
+            </span>
+            <button
+              onClick={handleLogout}
+              className="bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-red-200"
+            >
+              Sign out
+            </button>
+          </div>
+          <h1 className="text-4xl font-bold text-gray-800 mb-2 mt-8">
             💰 Expense Analytics Dashboard
           </h1>
           <p className="text-gray-600">

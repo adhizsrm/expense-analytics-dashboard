@@ -9,13 +9,15 @@ import {
   validateExpenseInput,
   validateFilterQuery,
 } from "../middleware/validation.js";
+import { Request, Response } from "express";
+import { Expense } from "../types/index.js";
 
 const router = express.Router();
-let cachedExpenses = [];
+let cachedExpenses: Expense[] = [];
 
-router.post("/parse", validateExpenseInput, (req, res) => {
+router.post("/parse", validateExpenseInput, (req: Request, res: Response) => {
   try {
-    const expenses = parseExpenses(req.body);
+    const expenses = parseExpenses(req.body as string);
     if (expenses.length === 0) {
       return res
         .status(400)
@@ -34,27 +36,31 @@ router.post("/parse", validateExpenseInput, (req, res) => {
       },
     });
   } catch (error) {
+    const err = error as Error;
     res
       .status(500)
       .json({
         success: false,
         error: "Failed to parse expenses",
-        details: error.message,
+        details: err.message,
       });
   }
 });
 
-router.get("/", validateFilterQuery, (req, res) => {
+router.get("/", validateFilterQuery, (req: Request, res: Response) => {
   try {
     const filters = {
-      category: req.query.category,
-      startDate: req.query.startDate,
-      endDate: req.query.endDate,
-      minAmount: req.query.minAmount,
-      maxAmount: req.query.maxAmount,
+      category: req.query.category as string | undefined,
+      startDate: req.query.startDate as string | undefined,
+      endDate: req.query.endDate as string | undefined,
+      minAmount: req.query.minAmount as string | undefined,
+      maxAmount: req.query.maxAmount as string | undefined,
     };
     Object.keys(filters).forEach(
-      (key) => filters[key] === undefined && delete filters[key]
+      (key) => {
+        const k = key as keyof typeof filters;
+        if (filters[k] === undefined) delete filters[k];
+      }
     );
     const filtered = filterExpenses(cachedExpenses, filters);
     const categoryTotals = calculateCategoryTotals(filtered);
@@ -75,12 +81,12 @@ router.get("/", validateFilterQuery, (req, res) => {
   }
 });
 
-router.get("/categories", (req, res) => {
+router.get("/categories", (req: Request, res: Response) => {
   const categories = [...new Set(cachedExpenses.map((e) => e.category))].sort();
   res.json({ success: true, data: { categories } });
 });
 
-router.delete("/", (req, res) => {
+router.delete("/", (req: Request, res: Response) => {
   cachedExpenses = [];
   res.json({ success: true, message: "All expenses cleared" });
 });

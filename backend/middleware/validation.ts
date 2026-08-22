@@ -1,3 +1,4 @@
+import { Request, Response, NextFunction } from "express";
 import { body, query, validationResult } from "express-validator";
 
 export const validateExpenseInput = [
@@ -9,12 +10,17 @@ export const validateExpenseInput = [
     .isLength({ max: 1000000 })
     .withMessage("Input too large (max 1MB)"),
 
-  (req, res, next) => {
+  (req: Request, res: Response, next: NextFunction) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
         success: false,
-        errors: errors.array().map((e) => ({ field: e.path, message: e.msg })),
+        errors: errors.array().map((e) => {
+          if (e.type === 'field') {
+            return { field: e.path, message: e.msg };
+          }
+          return { field: 'unknown', message: e.msg };
+        }),
       });
     }
     next();
@@ -24,16 +30,21 @@ export const validateExpenseInput = [
 export const validateFilterQuery = [
   query("category").optional().isString().trim().notEmpty(),
   query("startDate").optional().isISO8601(),
-   query("endDate").optional().isISO8601(),
+  query("endDate").optional().isISO8601(),
   query("minAmount").optional().isFloat({ min: 0 }),
   query("maxAmount").optional().isFloat({ min: 0 }),
 
-  (req, res, next) => {
+  (req: Request, res: Response, next: NextFunction) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
         success: false,
-        errors: errors.array().map((e) => ({ field: e.path, message: e.msg })),
+        errors: errors.array().map((e) => {
+          if (e.type === 'field') {
+            return { field: e.path, message: e.msg };
+          }
+          return { field: 'unknown', message: e.msg };
+        }),
       });
     }
     next();

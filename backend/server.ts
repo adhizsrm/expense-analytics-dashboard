@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import expenseRoutes from "./routes/expenses.js";
 
@@ -16,7 +16,7 @@ app.use(
 app.use(express.json());
 app.use(express.text({ limit: "10mb" }));
 
-app.get("/api/health", (req, res) => {
+app.get("/api/health", (req: Request, res: Response) => {
   res.json({
     status: "ok",
     message: "Expense Analytics API is running",
@@ -26,7 +26,7 @@ app.get("/api/health", (req, res) => {
 
 app.use("/api/expenses", expenseRoutes);
 
-app.use((err, req, res, next) => {
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error("Server error:", err);
   res.status(500).json({
     success: false,
@@ -35,7 +35,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.use((req, res) => {
+app.use((req: Request, res: Response) => {
   res.status(404).json({
     success: false,
     error: "Route not found",

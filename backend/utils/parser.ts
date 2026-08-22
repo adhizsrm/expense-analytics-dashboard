@@ -1,4 +1,6 @@
-function normDate(s) {
+import { Expense, ExpenseAnalytics, FilterSettings } from "../types/index.js";
+
+function normDate(s: string): string {
   const m = s.trim().match(/^(\d{2})-([A-Za-z]+)-(\d{4})/);
   if (!m) return s.trim();
   const [, d, mon, y] = m;
@@ -30,11 +32,11 @@ function normDate(s) {
   };
   const key = Object.keys(monthMap).find(
     (k) => k.toLowerCase() === mon.toLowerCase().replace(/\.$/, ""),
-  );
+  ) as keyof typeof monthMap | undefined;
   return `${d}-${key ? monthMap[key] : "01"}-${y}`;
 }
 
-function parseDate(dateStr) {
+function parseDate(dateStr: string): Date {
   // handle both formats
   if (dateStr.includes("-") && dateStr.split("-")[0].length === 4) {
     // YYYY-MM-DD
@@ -43,11 +45,11 @@ function parseDate(dateStr) {
 
   // DD-MM-YYYY
   const [d, m, y] = dateStr.split("-");
-  return new Date(y, m - 1, d);
+  return new Date(parseInt(y), parseInt(m) - 1, parseInt(d));
 }
 
-export function parseExpenses(text) {
-  const expenses = [];
+export function parseExpenses(text: string): Expense[] {
+  const expenses: Expense[] = [];
   let currentDate = null;
   let lineNumber = 0;
   for (const rawLine of text.split(/\r?\n/)) {
@@ -81,40 +83,45 @@ export function parseExpenses(text) {
   return expenses;
 }
 
-export function calculateCategoryTotals(expenses) {
+export function calculateCategoryTotals(expenses: Expense[]): Record<string, number> {
   return expenses.reduce((acc, expense) => {
     const cat = expense.category || "Uncategorized";
     acc[cat] = (acc[cat] || 0) + expense.amount;
     return acc;
-  }, {});
+  }, {} as Record<string, number>);
 }
 
-export function filterExpenses(expenses, filters = {}) {
+export function filterExpenses(expenses: Expense[], filters: FilterSettings = {}): Expense[] {
   let filtered = [...expenses];
-  if (filters.category)
+  const cat = filters.category;
+  if (cat)
     filtered = filtered.filter(
-      (e) => e.category.toLowerCase() === filters.category.toLowerCase(),
+      (e) => e.category.toLowerCase() === cat.toLowerCase(),
     );
-  if (filters.startDate)
+  const start = filters.startDate;
+  if (start)
     filtered = filtered.filter(
-      (e) => parseDate(e.date) >= parseDate(filters.startDate),
+      (e) => parseDate(e.date) >= parseDate(start),
     );
-  if (filters.endDate)
+  const end = filters.endDate;
+  if (end)
     filtered = filtered.filter(
-      (e) => parseDate(e.date) <= parseDate(filters.endDate),
+      (e) => parseDate(e.date) <= parseDate(end),
     );
-  if (filters.minAmount !== undefined)
+  const minAmt = filters.minAmount;
+  if (minAmt !== undefined)
     filtered = filtered.filter(
-      (e) => e.amount >= parseFloat(filters.minAmount),
+      (e) => e.amount >= (typeof minAmt === 'string' ? parseFloat(minAmt) : minAmt),
     );
-  if (filters.maxAmount !== undefined)
+  const maxAmt = filters.maxAmount;
+  if (maxAmt !== undefined)
     filtered = filtered.filter(
-      (e) => e.amount <= parseFloat(filters.maxAmount),
+      (e) => e.amount <= (typeof maxAmt === 'string' ? parseFloat(maxAmt) : maxAmt),
     );
   return filtered;
 }
 
-export function getAnalytics(expenses) {
+export function getAnalytics(expenses: Expense[]): ExpenseAnalytics {
   if (expenses.length === 0)
     return {
       totalExpenses: 0,

@@ -1,6 +1,7 @@
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import expenseRoutes from "./routes/expenses.js";
+import { initDB } from "./db/index.js";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -42,7 +43,12 @@ app.use((req: Request, res: Response) => {
   });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
+  try {
+    await initDB();
+  } catch (error) {
+    console.error("Database initialization failed:", error);
+  }
   console.log(`🚀 Server running on http://localhost:${PORT}`);
   console.log(`📊 API endpoints:`);
   console.log(`   - POST http://localhost:${PORT}/api/expenses/parse`);

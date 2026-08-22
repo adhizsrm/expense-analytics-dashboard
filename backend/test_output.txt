@@ -1,0 +1,41 @@
+﻿Ôùç injected env (6) from .env // tip: Ôîÿ custom filepath { path: '/custom/path/.env' }
+=== 1. CREATE TWO TEST USERS ===
+User A ID: 6
+User B ID: 7
+TEST 1 RESULT: PASS
+
+=== 2. USER A CREATE EXPENSES ===
+Test 2 (Create A): PASS (Expected 200, got 200)
+
+=== 3. USER B CREATE EXPENSES ===
+Test 3 (Create B): PASS (Expected 200, got 200)
+
+=== 4. USER A READ EXPENSES ===
+Test 4 (Read A): PASS
+
+=== 5. USER B READ EXPENSES ===
+Test 5 (Read B): PASS
+
+=== 6. USER A CATEGORIES ===
+Test 6 (Cats A): PASS
+
+=== 7. USER B CATEGORIES ===
+Test 7 (Cats B): PASS
+
+=== 8. CROSS-USER QUERY ATTACK ===
+Test 8 (Cross Query): PASS
+
+=== 9. CROSS-USER DELETE ATTACK ===
+Test 9 (Cross Delete / B Delete): PASS
+
+=== 10. VALID DELETE ===
+Test 10 (Valid Delete A): PASS
+
+=== 11. DATABASE OWNERSHIP VERIFICATION ===
+Test 11 (DB Verify): FAIL
+
+=== 12. FILTER ISOLATION ===
+Test 12 (Filter cross leak): PASS
+
+=== 15. UNAUTHENTICATED ACCESS ===
+Test 15 (Unauth): PASS (Expected strictly 401 across endpoints)

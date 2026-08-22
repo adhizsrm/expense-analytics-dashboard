@@ -32,18 +32,11 @@ router.post("/parse", validateExpenseInput, async (req: AuthRequest, res: Respon
     try {
       await client.query('BEGIN');
 
-      // Temporary dummy user to satisfy Checkpoint 1's NOT NULL constraint
-      await client.query(`
-        INSERT INTO users (id, email, password_hash) 
-        VALUES (1, 'temp@expense.com', 'dummy_hash') 
-        ON CONFLICT (email) DO NOTHING
-      `);
-
       for (const exp of expenses) {
         const result = await client.query(
           `INSERT INTO expenses (user_id, date, description, amount, category) 
            VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-          [1, exp.date, exp.description, exp.amount, exp.category]
+          [req.user!.userId, exp.date, exp.description, exp.amount, exp.category]
         );
         const row = result.rows[0];
         insertedExpenses.push({
@@ -86,8 +79,8 @@ router.post("/parse", validateExpenseInput, async (req: AuthRequest, res: Respon
 
 router.get("/", validateFilterQuery, async (req: AuthRequest, res: Response) => {
   try {
-    let queryArgs: (string | number)[] = [1];
-    let queryConditions = ["user_id = $1"]; // temp dummy user until Checkpoint 4
+    let queryArgs: (string | number)[] = [req.user!.userId];
+    let queryConditions = ["user_id = $1"];
 
     if (req.query.category) {
       queryArgs.push(req.query.category as string);
@@ -143,7 +136,7 @@ router.get("/", validateFilterQuery, async (req: AuthRequest, res: Response) => 
 
 router.get("/categories", async (req: AuthRequest, res: Response) => {
   try {
-    const result = await pool.query("SELECT DISTINCT category FROM expenses WHERE user_id = 1 ORDER BY category");
+    const result = await pool.query("SELECT DISTINCT category FROM expenses WHERE user_id = $1 ORDER BY category", [req.user!.userId]);
     const categories = result.rows.map(row => row.category);
     res.json({ success: true, data: { categories } });
   } catch (error) {
@@ -154,7 +147,7 @@ router.get("/categories", async (req: AuthRequest, res: Response) => {
 
 router.delete("/", async (req: AuthRequest, res: Response) => {
   try {
-    await pool.query("DELETE FROM expenses WHERE user_id = 1");
+    await pool.query("DELETE FROM expenses WHERE user_id = $1", [req.user!.userId]);
     res.json({ success: true, message: "All expenses cleared" });
   } catch (error) {
     const err = error as Error;

@@ -14,7 +14,6 @@ import { Expense } from "../types/index.js";
 import { pool } from "../db/index.js";
 
 const router = express.Router();
-let cachedExpenses: Expense[] = [];
 
 router.post("/parse", validateExpenseInput, async (req: Request, res: Response) => {
   try {
@@ -59,7 +58,6 @@ router.post("/parse", validateExpenseInput, async (req: Request, res: Response) 
       client.release();
     }
 
-    cachedExpenses = insertedExpenses;
     const categoryTotals = calculateCategoryTotals(insertedExpenses);
     const analytics = getAnalytics(insertedExpenses);
 
@@ -84,48 +82,82 @@ router.post("/parse", validateExpenseInput, async (req: Request, res: Response) 
   }
 });
 
-router.get("/", validateFilterQuery, (req: Request, res: Response) => {
+router.get("/", validateFilterQuery, async (req: Request, res: Response) => {
   try {
-    const filters = {
-      category: req.query.category as string | undefined,
-      startDate: req.query.startDate as string | undefined,
-      endDate: req.query.endDate as string | undefined,
-      minAmount: req.query.minAmount as string | undefined,
-      maxAmount: req.query.maxAmount as string | undefined,
-    };
-    Object.keys(filters).forEach(
-      (key) => {
-        const k = key as keyof typeof filters;
-        if (filters[k] === undefined) delete filters[k];
-      }
-    );
-    const filtered = filterExpenses(cachedExpenses, filters);
+    let queryArgs: (string | number)[] = [1];
+    let queryConditions = ["user_id = $1"]; // temp dummy user until Checkpoint 4
+
+    if (req.query.category) {
+      queryArgs.push(req.query.category as string);
+      queryConditions.push(`LOWER(category) = LOWER($${queryArgs.length})`);
+    }
+    if (req.query.startDate) {
+      queryArgs.push(req.query.startDate as string);
+      queryConditions.push(`date >= $${queryArgs.length}`);
+    }
+    if (req.query.endDate) {
+      queryArgs.push(req.query.endDate as string);
+      queryConditions.push(`date <= $${queryArgs.length}`);
+    }
+    if (req.query.minAmount !== undefined) {
+      queryArgs.push(parseFloat(req.query.minAmount as string));
+      queryConditions.push(`amount >= $${queryArgs.length}`);
+    }
+    if (req.query.maxAmount !== undefined) {
+      queryArgs.push(parseFloat(req.query.maxAmount as string));
+      queryConditions.push(`amount <= $${queryArgs.length}`);
+    }
+
+    const whereClause = "WHERE " + queryConditions.join(" AND ");
+    const sql = `SELECT id, TO_CHAR(date, 'YYYY-MM-DD') AS date, description, amount, category FROM expenses ${whereClause} ORDER BY date DESC`;
+
+    const result = await pool.query(sql, queryArgs);
+
+    const filtered: Expense[] = result.rows.map(row => ({
+      ...row,
+      id: String(row.id),
+      amount: parseFloat(row.amount), // PG driver returns NUMERIC as string to preserve precision
+    }));
+
     const categoryTotals = calculateCategoryTotals(filtered);
     const analytics = getAnalytics(filtered);
+
     res.json({
       success: true,
       data: {
         expenses: filtered,
         categoryTotals,
         analytics,
-        filtersApplied: Object.keys(filters).length > 0,
+        filtersApplied: queryArgs.length > 1,
       },
     });
   } catch (error) {
+    const err = error as Error;
     res
       .status(500)
-      .json({ success: false, error: "Failed to filter expenses" });
+      .json({ success: false, error: "Failed to filter expenses", details: err.message });
   }
 });
 
-router.get("/categories", (req: Request, res: Response) => {
-  const categories = [...new Set(cachedExpenses.map((e) => e.category))].sort();
-  res.json({ success: true, data: { categories } });
+router.get("/categories", async (req: Request, res: Response) => {
+  try {
+    const result = await pool.query("SELECT DISTINCT category FROM expenses WHERE user_id = 1 ORDER BY category");
+    const categories = result.rows.map(row => row.category);
+    res.json({ success: true, data: { categories } });
+  } catch (error) {
+    const err = error as Error;
+    res.status(500).json({ success: false, error: "Failed to fetch categories", details: err.message });
+  }
 });
 
-router.delete("/", (req: Request, res: Response) => {
-  cachedExpenses = [];
-  res.json({ success: true, message: "All expenses cleared" });
+router.delete("/", async (req: Request, res: Response) => {
+  try {
+    await pool.query("DELETE FROM expenses WHERE user_id = 1");
+    res.json({ success: true, message: "All expenses cleared" });
+  } catch (error) {
+    const err = error as Error;
+    res.status(500).json({ success: false, error: "Failed to clear expenses", details: err.message });
+  }
 });
 
 export default router;

@@ -11,11 +11,12 @@ import {
 } from "../middleware/validation.js";
 import { Request, Response } from "express";
 import { Expense } from "../types/index.js";
+import { pool } from "../db/index.js";
 
 const router = express.Router();
 let cachedExpenses: Expense[] = [];
 
-router.post("/parse", validateExpenseInput, (req: Request, res: Response) => {
+router.post("/parse", validateExpenseInput, async (req: Request, res: Response) => {
   try {
     const expenses = parseExpenses(req.body as string);
     if (expenses.length === 0) {
@@ -23,16 +24,52 @@ router.post("/parse", validateExpenseInput, (req: Request, res: Response) => {
         .status(400)
         .json({ success: false, error: "No valid expenses found" });
     }
-    cachedExpenses = expenses;
-    const categoryTotals = calculateCategoryTotals(expenses);
-    const analytics = getAnalytics(expenses);
+
+    const client = await pool.connect();
+    let insertedExpenses: Expense[] = [];
+
+    try {
+      await client.query('BEGIN');
+
+      // Temporary dummy user to satisfy Checkpoint 1's NOT NULL constraint
+      await client.query(`
+        INSERT INTO users (id, email, password_hash) 
+        VALUES (1, 'temp@expense.com', 'dummy_hash') 
+        ON CONFLICT (email) DO NOTHING
+      `);
+
+      for (const exp of expenses) {
+        const result = await client.query(
+          `INSERT INTO expenses (user_id, date, description, amount, category) 
+           VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+          [1, exp.date, exp.description, exp.amount, exp.category]
+        );
+        const row = result.rows[0];
+        insertedExpenses.push({
+          ...exp,
+          id: String(row.id)
+        });
+      }
+
+      await client.query('COMMIT');
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
+    }
+
+    cachedExpenses = insertedExpenses;
+    const categoryTotals = calculateCategoryTotals(insertedExpenses);
+    const analytics = getAnalytics(insertedExpenses);
+
     res.json({
       success: true,
       data: {
-        expenses,
+        expenses: insertedExpenses,
         categoryTotals,
         analytics,
-        message: `Successfully parsed ${expenses.length} expenses`,
+        message: `Successfully parsed ${insertedExpenses.length} expenses`,
       },
     });
   } catch (error) {

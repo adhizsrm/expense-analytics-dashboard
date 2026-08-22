@@ -1,25 +1,30 @@
 import { useState } from 'react';
 
-export default function FileUpload({ onUpload, loading }) {
+interface FileUploadProps {
+  onUpload: (text: string) => void;
+  loading: boolean;
+}
+
+export default function FileUpload({ onUpload, loading }: FileUploadProps) {
   const [text, setText] = useState('');
   const [dragActive, setDragActive] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (text.trim()) {
       onUpload(text);
     }
   };
 
-  const handleFileUpload = (file) => {
+  const handleFileUpload = (file: File) => {
     const reader = new FileReader();
     reader.onload = (e) => {
-      setText(e.target.result);
+      setText(e.target?.result as string);
     };
     reader.readAsText(file);
   };
 
-  const handleDrag = (e) => {
+  const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (e.type === 'dragenter' || e.type === 'dragover') {
@@ -29,7 +34,7 @@ export default function FileUpload({ onUpload, loading }) {
     }
   };
 
-  const handleDrop = (e) => {
+  const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
@@ -47,11 +52,10 @@ export default function FileUpload({ onUpload, loading }) {
 
       <form onSubmit={handleSubmit}>
         <div
-          className={`relative border-2 border-dashed rounded-lg p-4 mb-4 transition-colors ${
-            dragActive
-              ? 'border-primary-500 bg-primary-50'
-              : 'border-gray-300 hover:border-gray-400'
-          }`}
+          className={`relative border-2 border-dashed rounded-lg p-4 mb-4 transition-colors ${dragActive
+            ? 'border-primary-500 bg-primary-50'
+            : 'border-gray-300 hover:border-gray-400'
+            }`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
@@ -80,7 +84,7 @@ Snacks – 174 (Snacks)"
                 accept=".txt"
                 className="hidden"
                 onChange={(e) => {
-                  if (e.target.files[0]) {
+                  if (e.target.files && e.target.files[0]) {
                     handleFileUpload(e.target.files[0]);
                   }
                 }}

@@ -1,7 +1,14 @@
-import { useState } from 'react';
+import { useState, ChangeEvent } from 'react';
+import { FilterSettings } from '../types';
 
-export default function FilterPanel({ categories, onFilter, onClear }) {
-  const [filters, setFilters] = useState({
+interface FilterPanelProps {
+  categories: string[];
+  onFilter: (filters: FilterSettings) => void;
+  onClear: () => void;
+}
+
+export default function FilterPanel({ categories, onFilter, onClear }: FilterPanelProps) {
+  const [filters, setFilters] = useState<FilterSettings>({
     category: '',
     startDate: '',
     endDate: '',
@@ -9,15 +16,15 @@ export default function FilterPanel({ categories, onFilter, onClear }) {
     maxAmount: '',
   });
 
-  const handleChange = (e) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFilters(prev => ({ ...prev, [name]: value }));
   };
 
   const handleApply = () => {
-    const activeFilters = {};
+    const activeFilters: Record<string, string> = {};
     Object.entries(filters).forEach(([key, value]) => {
-      if (value) activeFilters[key] = value;
+      if (value) activeFilters[key] = value as string;
     });
     onFilter(activeFilters);
   };

@@ -1,12 +1,15 @@
-
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 const COLORS = [
   '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8',
   '#82CA9D', '#FFC658', '#FF6B9D', '#C77DFF', '#06FFA5'
 ];
 
-export default function CategoryPieChart({ categoryTotals }) {
+interface CategoryPieChartProps {
+  categoryTotals: Record<string, number> | undefined;
+}
+
+export default function CategoryPieChart({ categoryTotals }: CategoryPieChartProps) {
   if (!categoryTotals || Object.keys(categoryTotals).length === 0) {
     return (
       <div className="bg-white rounded-lg shadow-md p-6">
@@ -27,7 +30,7 @@ export default function CategoryPieChart({ categoryTotals }) {
     }))
     .sort((a, b) => b.value - a.value);
 
-  const CustomTooltip = ({ active, payload }) => {
+  const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0];
       const percentage = ((data.value / data.payload.payload.totalValue) * 100).toFixed(1);
@@ -46,7 +49,7 @@ export default function CategoryPieChart({ categoryTotals }) {
   };
 
   // Custom label to show only percentage on pie
-  const renderLabel = ({ name, percent }) => {
+  const renderLabel = ({ percent }: any) => {
     return `${(percent * 100).toFixed(0)}%`;
   };
 
@@ -72,7 +75,7 @@ export default function CategoryPieChart({ categoryTotals }) {
             fill="#8884d8"
             dataKey="value"
           >
-            {enrichedData.map((entry, index) => (
+            {enrichedData.map((_entry, index) => (
               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
             ))}
           </Pie>

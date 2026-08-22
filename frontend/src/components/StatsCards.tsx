@@ -1,4 +1,10 @@
-export default function StatsCards({ analytics }) {
+import { ExpenseAnalytics } from '../types';
+
+interface StatsCardsProps {
+  analytics: ExpenseAnalytics | undefined;
+}
+
+export default function StatsCards({ analytics }: StatsCardsProps) {
   if (!analytics) return null;
 
   const stats = [

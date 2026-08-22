@@ -1,7 +1,12 @@
 import { useState } from 'react';
+import { Expense } from '../types';
 
-export default function ExpenseTable({ expenses }) {
-  const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
+interface ExpenseTableProps {
+  expenses: Expense[] | undefined;
+}
+
+export default function ExpenseTable({ expenses }: ExpenseTableProps) {
+  const [sortConfig, setSortConfig] = useState<{ key: keyof Expense; direction: 'asc' | 'desc' }>({ key: 'date', direction: 'desc' });
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -25,8 +30,8 @@ export default function ExpenseTable({ expenses }) {
         : b.amount - a.amount;
     }
     if (sortConfig.key === 'date') {
-      const dateA = new Date(a.date.split('-').reverse().join('-'));
-      const dateB = new Date(b.date.split('-').reverse().join('-'));
+      const dateA = new Date(a.date.split('-').reverse().join('-')).getTime();
+      const dateB = new Date(b.date.split('-').reverse().join('-')).getTime();
       return sortConfig.direction === 'asc' ? dateA - dateB : dateB - dateA;
     }
     const valA = String(a[sortConfig.key]).toLowerCase();
@@ -40,14 +45,14 @@ export default function ExpenseTable({ expenses }) {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedExpenses = sortedExpenses.slice(startIndex, startIndex + itemsPerPage);
 
-  const handleSort = (key) => {
+  const handleSort = (key: keyof Expense) => {
     setSortConfig({
       key,
       direction: sortConfig.key === key && sortConfig.direction === 'asc' ? 'desc' : 'asc',
     });
   };
 
-  const SortIcon = ({ columnKey }) => {
+  const SortIcon = ({ columnKey }: { columnKey: keyof Expense }) => {
     if (sortConfig.key !== columnKey) {
       return <span className="text-gray-400">⇅</span>;
     }

@@ -4,15 +4,17 @@ import StatsCards from './components/StatsCards';
 import FilterPanel from './components/FilterPanel';
 import CategoryPieChart from './components/CategoryPieChart';
 import ExpenseTable from './components/ExpenseTable';
-import { expenseAPI } from './services/api';
+import { expenseAPI, ParseExpensesData, GetExpensesData } from './services/api';
+import { FilterSettings } from './types';
+import { AxiosError } from 'axios';
 
 export default function App() {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [categories, setCategories] = useState([]);
+  const [data, setData] = useState<ParseExpensesData | GetExpensesData | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [categories, setCategories] = useState<string[]>([]);
 
-  const handleUpload = async (text) => {
+  const handleUpload = async (text: string) => {
     setLoading(true);
     setError(null);
 
@@ -29,14 +31,15 @@ export default function App() {
         }
       }
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to parse expenses');
+      const axiosError = err as AxiosError<{ error: string }>;
+      setError(axiosError.response?.data?.error || 'Failed to parse expenses');
       console.error('Upload error:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleFilter = async (filters) => {
+  const handleFilter = async (filters: FilterSettings) => {
     setLoading(true);
     setError(null);
 
@@ -47,7 +50,8 @@ export default function App() {
         setData(response.data);
       }
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to apply filters');
+      const axiosError = err as AxiosError<{ error: string }>;
+      setError(axiosError.response?.data?.error || 'Failed to apply filters');
       console.error('Filter error:', err);
     } finally {
       setLoading(false);

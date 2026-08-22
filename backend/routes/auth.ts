@@ -72,12 +72,9 @@ router.post("/login", validateLogin, async (req: Request, res: Response) => {
             return res.status(401).json({ success: false, error: "Invalid email or password" });
         }
 
-        if (!process.env.JWT_SECRET) {
-            console.warn("WARNING: JWT_SECRET is not defined in environment variables");
-        }
         const token = jwt.sign(
             { userId: user.id, email: user.email },
-            process.env.JWT_SECRET || "fallback_secret",
+            process.env.JWT_SECRET as string,
             { expiresIn: "1d" }
         );
 

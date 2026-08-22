@@ -3,6 +3,14 @@ import cors from "cors";
 import expenseRoutes from "./routes/expenses.js";
 import authRoutes from "./routes/auth.js";
 import { initDB } from "./db/index.js";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+if (!process.env.JWT_SECRET) {
+  console.error("FATAL ERROR: JWT_SECRET environment variable is missing.");
+  process.exit(1);
+}
 
 const app = express();
 const PORT = process.env.PORT || 3001;

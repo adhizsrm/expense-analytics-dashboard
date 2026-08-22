@@ -11,11 +11,13 @@ import {
 } from "../middleware/validation.js";
 import { Request, Response } from "express";
 import { Expense } from "../types/index.js";
+import { AuthRequest, verifyJWT } from "../middleware/auth.js";
 import { pool } from "../db/index.js";
 
 const router = express.Router();
+router.use(verifyJWT);
 
-router.post("/parse", validateExpenseInput, async (req: Request, res: Response) => {
+router.post("/parse", validateExpenseInput, async (req: AuthRequest, res: Response) => {
   try {
     const expenses = parseExpenses(req.body as string);
     if (expenses.length === 0) {
@@ -82,7 +84,7 @@ router.post("/parse", validateExpenseInput, async (req: Request, res: Response) 
   }
 });
 
-router.get("/", validateFilterQuery, async (req: Request, res: Response) => {
+router.get("/", validateFilterQuery, async (req: AuthRequest, res: Response) => {
   try {
     let queryArgs: (string | number)[] = [1];
     let queryConditions = ["user_id = $1"]; // temp dummy user until Checkpoint 4
@@ -139,7 +141,7 @@ router.get("/", validateFilterQuery, async (req: Request, res: Response) => {
   }
 });
 
-router.get("/categories", async (req: Request, res: Response) => {
+router.get("/categories", async (req: AuthRequest, res: Response) => {
   try {
     const result = await pool.query("SELECT DISTINCT category FROM expenses WHERE user_id = 1 ORDER BY category");
     const categories = result.rows.map(row => row.category);
@@ -150,7 +152,7 @@ router.get("/categories", async (req: Request, res: Response) => {
   }
 });
 
-router.delete("/", async (req: Request, res: Response) => {
+router.delete("/", async (req: AuthRequest, res: Response) => {
   try {
     await pool.query("DELETE FROM expenses WHERE user_id = 1");
     res.json({ success: true, message: "All expenses cleared" });

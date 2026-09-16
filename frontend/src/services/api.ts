@@ -91,6 +91,14 @@ export const authAPI = {
   register: async (credentials: any): Promise<APIResponse<any>> => {
     const response = await api.post<APIResponse<any>>('/auth/register', credentials);
     return response.data;
+  },
+  forgotPassword: async (email: string): Promise<APIResponse<any>> => {
+    const response = await api.post<APIResponse<any>>('/auth/forgot-password', { email });
+    return response.data;
+  },
+  resetPassword: async (token: string, newPassword: string): Promise<APIResponse<any>> => {
+    const response = await api.post<APIResponse<any>>('/auth/reset-password', { token, newPassword });
+    return response.data;
   }
 };
 
